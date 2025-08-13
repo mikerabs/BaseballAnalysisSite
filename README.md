@@ -1,2 +1,47 @@
 # BaseballAnalysisSite
 A site for storing a database containing Trackman and Statcast data for future analyses to be done.
+
+### 8/13/2025
+Created this VM.  Started the data migration by zstd compressing the CSV files on local machine and scp-ing them over.  
+Created stg schema in psql - CREATE SCHEMA IF NOT EXISTS stg;
+
+Used following commands to stage the CSVs, format A = NCAA Trackman data, B = MLB_All_Time, C = Statcast
+python3 make_stage_sql.py ~/uploads/Full_College_TM_2023.csv pitches_fmt_a | psql -U micro -d baseball -h localhost
+python3 make_stage_sql.py ~/uploads/MLB_ALL_TIME.csv pitches_fmt_b | psql -U micro -d baseball -h localhost
+python3 make_stage_sql.py ~/uploads/Statcast_2024.csv pitches_fmt_c | psql -U micro -d baseball -h localhost
+
+This actually copied the data from CSV to staging:
+\timing
+SET synchronous_commit = off;
+SET maintenance_work_mem = '256MB';
+
+-- Format A (the two matching files)
+\copy stg.pitches_fmt_a FROM '/home/mikerabayda/uploads/Full_College_TM_2023.csv' CSV HEADER
+\copy stg.pitches_fmt_a FROM '/home/mikerabayda/uploads/Full_College_TM_2024.csv' CSV HEADER
+
+-- Format B
+\copy stg.pitches_fmt_b FROM '/home/mikerabayda/uploads/MLB_ALL_TIME.csv' CSV HEADER
+
+-- Format C
+\copy stg.pitches_fmt_c FROM '/home/mikerabayda/uploads/Statcast_2024.csv' CSV HEADER
+
+-- Quick sanity
+SELECT 'A' src, COUNT(*) FROM stg.pitches_fmt_a
+UNION ALL SELECT 'B', COUNT(*) FROM stg.pitches_fmt_b
+UNION ALL SELECT 'C', COUNT(*) FROM stg.pitches_fmt_c;
+\timing
+SET synchronous_commit = off;
+SET maintenance_work_mem = '256MB';
+
+-- Format A (the two matching files)
+\copy stg.pitches_fmt_a FROM '/home/mikerabayda/uploads/Full_College_TM_2023.csv' CSV HEADER
+\copy stg.pitches_fmt_a FROM '/home/mikerabayda/uploads/Full_College_TM_2024.csv' CSV HEADER
+
+-- Format B
+\copy stg.pitches_fmt_b FROM '/home/mikerabayda/uploads/MLB_ALL_TIME.csv' CSV HEADER
+
+-- Format C
+\copy stg.pitches_fmt_c FROM '/home/mikerabayda/uploads/Statcast_2024.csv' CSV HEADER
+
+Then I created a create table file for format A to start with since I know the Trackman data typing the best. Then I created a load from staging to table for format A that creates a view of the data from staging, and then selects everything from that view to then insert into the final table that will be queried from.  My next step will be making similar tables for formats B and C, which are very similar but differ for a couple of variables, some are present, however some appear not to be present in both which is why I separated MLB_ALL_TIME and Statcast_2024. After that is finished, I should be all set to start with the classification of pitches, which will be a cool project to start with, as I'll do both MLB and College and compare the 2, especially on differences like curveball/slider/sweeper. 
+
