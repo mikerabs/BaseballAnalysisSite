@@ -73,7 +73,7 @@ vx0 - The velocity of the pitch, in feet per second, in x-dimension, determined 
 
 vy0 - The velocity of the pitch, in feet per second, in y-dimension, determined at y=50 feet.
 
-vy0 - The velocity of the pitch, in feet per second, in z-dimension, determined at y=50 feet.
+vz0 - The velocity of the pitch, in feet per second, in z-dimension, determined at y=50 feet.
 
 ax - The acceleration of the pitch, in feet per second per second, in x-dimension, determined at y=50 feet.
 
@@ -83,7 +83,7 @@ az - The acceleration of the pitch, in feet per second per second, in z-dimensio
 
 effective_speed - Derived speed based on the the extension of the pitcher's release.
 
-release_spin - Spin rate of pitch tracked by Statcast.
+release_spin_rate - Spin rate of pitch tracked by Statcast.
 
 release_extension - Release extension of pitch in feet as tracked by Statcast.
 
@@ -94,6 +94,14 @@ release_pos_y - Release position of pitch measured in feet from the catcher's pe
 pitch_name - The name of the pitch derived from the Statcast Data.
 
 spin_axis - The Spin Axis in the 2D X-Z plane in degrees from 0 to 360, such that 180 represents a pure backspin fastball and 0 degrees represents a pure topspin (12-6) curveball
+
+
+SELECT ps.pitcher, ps.player_name, ps.pitch_type, ps.pitch_name,ps.release_speed, ps.release_pos_x, ps.release_pos_y, ps.release_pos_z, ps.description, ps.zone, ps.p_throws, ps.pfx_x, ps.pfx_z, ps.plate_x, ps.plate_z, ps.vx0, ps.vy0, ps.vz0,ps.ax, ps.ay, ps.az, ps.effective_speed, ps.release_spin_rate, ps.release_extension, ps.spin_axis
+from pitches_statcast ps
+where (pitch_type = 'SI' OR pitch_type = 'FS') AND game_year < 2021;
+
+Get plot back, execute locally - scp mikerabayda@IP:/home/mikerabayda/repos/BaseballAnalysisSite/analyses/classify_pitch_types/scatter_pitch.png .
+
 
 ## 3. Understand your data sources
 
